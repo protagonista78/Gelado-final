@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLANOS DO GELADO</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ff003c">
+    <link rel="apple-touch-icon" href="https://i.ibb.co/GvLRtfDj/1773118864436.png">
+    <link rel="icon" href="https://i.ibb.co/GvLRtfDj/1773118864436.png" type="image/png">
+
+    <style>
+        :root {
+            --primary-color: #ff003c;
+            --bg-color: #0d0d0d;
+            --card-bg: #1a1a1a;
+            --input-bg: #252525;
+            --text-color: #e0e0e0;
+            --accent: #00f2ff;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+
+        /* Estilo da Logo */
+        .app-logo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid var(--primary-color);
+            box-shadow: 0 0 20px var(--primary-color);
+            margin-bottom: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #login-screen {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 25px var(--primary-color);
+            border: 1px solid var(--primary-color);
+            width: 90%;
+            max-width: 500px;
+            margin-top: 100px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        #planner-screen {
+            display: none;
+            background: var(--card-bg);
+            padding: 40px;
+            border-bottom: 5px solid var(--primary-color);
+            width: 100%; 
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        input, textarea {
+            background: var(--input-bg);
+            border: 1px solid #444;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            width: 100%;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            width: 100%;
+            margin-bottom: 15px;
+            transition: 0.3s;
+        }
+
+        button:hover { opacity: 0.8; box-shadow: 0 0 10px var(--primary-color); }
+
+        .archive-card {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            padding: 30px;
+            margin-top: 30px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .topic-card {
+            background: #111;
+            padding: 15px;
+            border-left: 4px solid var(--accent);
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .action-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .edit-btn { background: var(--accent); color: #000; flex: 1; }
+        .delete-plan-btn { background: #444; color: white; flex: 1; }
+        .del-topic-btn { background: #333; width: auto; padding: 5px 15px; font-size: 0.8rem; }
+
+        #topicEditor, #mainActions { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <img src="https://i.ibb.co/GvLRtfDj/1773118864436.png" alt="Logo" class="app-logo">
+        <h2 style="color: var(--primary-color);">PLANOS DO GELADO</h2>
+        <input type="password" id="passwordField" placeholder="CHAVE DE ACESSO">
+        <button onclick="checkLogin()">CONECTAR</button>
+    </div>
+
+    <div id="planner-screen">
+        <img src="https://i.ibb.co/GvLRtfDj/1773118864436.png" alt="Logo" class="app-logo">
+        <h2 id="currentHeader" style="color: var(--primary-color); text-align: center; letter-spacing: 3px;">SISTEMA DE PLANEJAMENTO</h2>
+        
+        <div id="nameArea" style="max-width: 800px; margin: 0 auto;">
+            <input type="text" id="planNameInput" placeholder="Nome do Plano Principal...">
+            <button onclick="confirmName()">DEFINIR NOME E INICIAR</button>
+        </div>
+
+        <div id="mainActions" style="max-width: 1000px; margin: 0 auto;">
+            <button onclick="showTopicEditor()" style="background: var(--accent); color: #000;">+ ADICIONAR NOVO TÓPICO</button>
+            <div id="tempTopicsList"></div>
+            <button onclick="finalizePlan()" style="margin-top: 40px; background: #28a745;">SALVAR PLANO NO BANCO DE DADOS</button>
+        </div>
+
+        <div id="topicEditor" style="max-width: 800px; margin: 0 auto;">
+            <input type="text" id="topicTitleInput" placeholder="Título do Tópico">
+            <textarea id="topicDescInput" rows="8" placeholder="Escreva as informações detalhadas aqui..."></textarea>
+            <button onclick="saveTopic()">INSERIR TÓPICO</button>
+            <button onclick="hideTopicEditor()" style="background: #444;">CANCELAR</button>
+        </div>
+
+        <hr style="margin: 60px 0; border: 0; border-top: 1px solid #333;">
+        
+        <div id="finalArchive" style="max-width: 1200px; margin: 0 auto;">
+            <h3 style="color: #555; text-transform: uppercase; text-align: center;">Arquivos Armazenados</h3>
+        </div>
+    </div>
+
+    <script>
+        // Registro do Service Worker para instalação
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
+        }
+
+        let currentTopics = [];
+        let editingCardId = null;
+
+        function checkLogin() {
+            // A senha fumaça😶‍🌫️ permanece em sigilo no código
+            if (document.getElementById('passwordField').value === "fumaça😶‍🌫️") {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('planner-screen').style.display = 'block';
+            } else { alert("Acesso negado."); }
+        }
+
+        function confirmName() {
+            const name = document.getElementById('planNameInput').value;
+            if (name.trim()) {
+                document.getElementById('currentHeader').innerText = name.toUpperCase();
+                document.getElementById('nameArea').style.display = 'none';
+                document.getElementById('mainActions').style.display = 'block';
+            }
+        }
+
+        function showTopicEditor() {
+            document.getElementById('mainActions').style.display = 'none';
+            document.getElementById('topicEditor').style.display = 'block';
+        }
+
+        function hideTopicEditor() {
+            document.getElementById('topicEditor').style.display = 'none';
+            document.getElementById('mainActions').style.display = 'block';
+        }
+
+        function saveTopic() {
+            const title = document.getElementById('topicTitleInput').value;
+            const desc = document.getElementById('topicDescInput').value;
+            if (title && desc) {
+                currentTopics.push({ title, desc });
+                renderTempTopics();
+                document.getElementById('topicTitleInput').value = "";
+                document.getElementById('topicDescInput').value = "";
+                hideTopicEditor();
+            }
+        }
+
+        function renderTempTopics() {
+            const list = document.getElementById('tempTopicsList');
+            list.innerHTML = "";
+            currentTopics.forEach((t, index) => {
+                const div = document.createElement('div');
+                div.className = 'topic-card';
+                div.innerHTML = `<div><strong>${t.title}</strong><p style="margin:10px 0;">${t.desc}</p></div>
+                <button class="del-topic-btn" onclick="removeTopic(${index})">REMOVER</button>`;
+                list.appendChild(div);
+            });
+        }
+
+        function removeTopic(index) {
+            currentTopics.splice(index, 1);
+            renderTempTopics();
+        }
+
+        function finalizePlan() {
+            const name = document.getElementById('currentHeader').innerText;
+            const archive = document.getElementById('finalArchive');
+            
+            if (editingCardId) {
+                const oldCard = document.getElementById(editingCardId);
+                if (oldCard) oldCard.remove();
+            }
+
+            const cardId = 'plan-' + Date.now();
+            const planDiv = document.createElement('div');
+            planDiv.className = 'archive-card';
+            planDiv.id = cardId;
+            
+            let html = `<h2 style="color:var(--primary-color); margin-top:0;">${name}</h2>`;
+            currentTopics.forEach(t => {
+                html += `<div class="topic-card"><div><strong>${t.title}</strong><p>${t.desc}</p></div></div>`;
+            });
+            
+            const btnContainer = document.createElement('div');
+            btnContainer.className = 'action-btns';
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'edit-btn';
+            editBtn.innerText = "EDITAR PLANO";
+            const dataCopy = [...currentTopics];
+            editBtn.onclick = () => loadPlanForEdit(cardId, name, dataCopy);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-plan-btn';
+            deleteBtn.innerText = "APAGAR PLANO";
+            deleteBtn.onclick = () => { if(confirm("Deseja apagar este plano?")) planDiv.remove(); };
+
+            btnContainer.appendChild(editBtn);
+            btnContainer.appendChild(deleteBtn);
+            
+            planDiv.innerHTML = html;
+            planDiv.appendChild(btnContainer);
+            archive.prepend(planDiv);
+
+            resetUI();
+        }
+
+        function loadPlanForEdit(id, name, topics) {
+            editingCardId = id;
+            currentTopics = [...topics];
+            document.getElementById('planNameInput').value = name;
+            document.getElementById('currentHeader').innerText = name;
+            document.getElementById('nameArea').style.display = 'none';
+            document.getElementById('mainActions').style.display = 'block';
+            renderTempTopics();
+            window.scrollTo(0,0);
+        }
+
+        function resetUI() {
+            currentTopics = [];
+            editingCardId = null;
+            document.getElementById('tempTopicsList').innerHTML = "";
+            document.getElementById('planNameInput').value = "";
+            document.getElementById('currentHeader').innerText = "NOVO PLANEJAMENTO";
+            document.getElementById('mainActions').style.display = 'none';
+            document.getElementById('nameArea').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
